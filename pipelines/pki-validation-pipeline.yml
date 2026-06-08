@@ -1,0 +1,88 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - scripts/**
+      - config/**
+
+pr:
+  branches:
+    include:
+      - main
+
+variables:
+  - group: pki-validation-vars
+
+stages:
+
+  - stage: ValidateScripts
+    displayName: PowerShell Script Validation
+    jobs:
+      - job: PSScriptAnalyzer
+        pool:
+          vmImage: windows-latest
+        steps:
+          - powershell: |
+              Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+              $results = Invoke-ScriptAnalyzer -Path scripts/ -Recurse -Severity Error, Warning
+              if ($results.Count -gt 0) {
+                  $results | Format-Table -AutoSize
+                  Write-Error "PSScriptAnalyzer found $($results.Count) issues"
+              } else {
+                  Write-Host "PSScriptAnalyzer: No issues found"
+              }
+            displayName: PSScriptAnalyzer validation
+
+  - stage: ValidateConfig
+    displayName: Configuration Validation
+    dependsOn: ValidateScripts
+    jobs:
+      - job: ValidateJSON
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: |
+              python3 -c "
+              import json, sys, pathlib
+              for f in pathlib.Path('config').glob('*.json'):
+                  try:
+                      json.loads(f.read_text())
+                      print(f'Valid: {f}')
+                  except json.JSONDecodeError as e:
+                      print(f'Invalid: {f}: {e}')
+                      sys.exit(1)
+              print('All JSON config files valid')
+              "
+            displayName: JSON configuration validation
+
+  - stage: CertificateHealthCheck
+    displayName: PKI Health Validation
+    dependsOn: ValidateConfig
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: PKIHealthCheck
+        pool:
+          vmImage: windows-latest
+        steps:
+          - powershell: |
+              # Validate OCSP URL responds
+              try {
+                  $response = Invoke-WebRequest -Uri $env:OCSP_URL -Method GET -TimeoutSec 10
+                  Write-Host "OCSP Responder: OK ($($response.StatusCode))"
+              } catch {
+                  Write-Warning "OCSP Responder: Not reachable from pipeline -- verify manually"
+              }
+
+              # Validate CRL URL responds
+              try {
+                  $response = Invoke-WebRequest -Uri $env:CRL_URL -Method GET -TimeoutSec 10
+                  Write-Host "CRL Distribution Point: OK ($($response.StatusCode))"
+              } catch {
+                  Write-Warning "CRL URL: Not reachable from pipeline -- verify manually"
+              }
+            displayName: PKI endpoint health check
+            env:
+              OCSP_URL: $(OCSP_URL)
+              CRL_URL: $(CRL_URL)

@@ -1,0 +1,74 @@
+{
+  "templates": [
+    {
+      "name": "CorpWebServer",
+      "displayName": "Corporate Web Server",
+      "baseTemplate": "WebServer",
+      "validityYears": 2,
+      "keyLength": 2048,
+      "hashAlgorithm": "SHA256",
+      "keyUsage": ["DigitalSignature", "KeyEncipherment"],
+      "enhancedKeyUsage": ["ServerAuthentication"],
+      "subjectType": "SuppliedInRequest",
+      "publishToAD": false,
+      "autoenrollment": false,
+      "description": "Internal HTTPS web services and IIS applications"
+    },
+    {
+      "name": "CorpComputer",
+      "displayName": "Corporate Computer",
+      "baseTemplate": "Computer",
+      "validityYears": 1,
+      "keyLength": 2048,
+      "hashAlgorithm": "SHA256",
+      "keyUsage": ["DigitalSignature", "KeyEncipherment"],
+      "enhancedKeyUsage": ["ClientAuthentication", "ServerAuthentication"],
+      "subjectType": "BuildFromActiveDirectory",
+      "publishToAD": true,
+      "autoenrollment": true,
+      "description": "Domain computers -- 802.1X network access and VPN authentication"
+    },
+    {
+      "name": "CorpUser",
+      "displayName": "Corporate User",
+      "baseTemplate": "User",
+      "validityYears": 1,
+      "keyLength": 2048,
+      "hashAlgorithm": "SHA256",
+      "keyUsage": ["DigitalSignature", "KeyEncipherment"],
+      "enhancedKeyUsage": ["ClientAuthentication", "EmailProtection"],
+      "subjectType": "BuildFromActiveDirectory",
+      "publishToAD": true,
+      "autoenrollment": true,
+      "description": "Domain users -- smart card authentication and S/MIME email signing"
+    },
+    {
+      "name": "CorpOCSPSigning",
+      "displayName": "Corporate OCSP Signing",
+      "baseTemplate": "OCSPResponseSigning",
+      "validityYears": 1,
+      "keyLength": 2048,
+      "hashAlgorithm": "SHA256",
+      "keyUsage": ["DigitalSignature"],
+      "enhancedKeyUsage": ["OCSPSigning"],
+      "subjectType": "BuildFromActiveDirectory",
+      "publishToAD": false,
+      "autoenrollment": true,
+      "description": "OCSP Responder signing certificate -- issued to OCSP server only"
+    },
+    {
+      "name": "CorpCodeSigning",
+      "displayName": "Corporate Code Signing",
+      "baseTemplate": "CodeSigning",
+      "validityYears": 2,
+      "keyLength": 2048,
+      "hashAlgorithm": "SHA256",
+      "keyUsage": ["DigitalSignature"],
+      "enhancedKeyUsage": ["CodeSigning"],
+      "subjectType": "SuppliedInRequest",
+      "publishToAD": false,
+      "autoenrollment": false,
+      "description": "Internal application and PowerShell script code signing"
+    }
+  ]
+}

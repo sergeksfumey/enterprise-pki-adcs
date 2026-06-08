@@ -1,0 +1,15 @@
+# PowerShell
+*.pfx
+*.p12
+*.cer
+*.crt
+*.key
+secrets/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
