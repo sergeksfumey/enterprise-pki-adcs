@@ -202,7 +202,7 @@ Infrastructure Services:
 ---
 
 ## Repository Structure
-
+```
 enterprise-pki-adcs/
 ├── scripts/
 │   ├── Install-RootCA.ps1
@@ -221,7 +221,7 @@ enterprise-pki-adcs/
 │   └── offline-root-ca-runbook.md
 └── pipelines/
     └── pki-validation-pipeline.yml
-
+```
 ---
 
 ## Future Evolution
